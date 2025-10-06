@@ -1,5 +1,4 @@
-# Main docker-compose for hosting platforms
-# If GitHub context doesn't work, upload source files and use docker-compose.local.yml instead
+# For local development and manual upload scenarios
 version: '3.8'
 
 services:
