@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  tradingview-mcp:
+    build:
+      context: https://github.com/atilaahmettaner/tradingview-mcp.git
+      dockerfile: Dockerfile
+    container_name: tradingview-mcp-server
+    environment:
+      - PYTHONUNBUFFERED=1
+    # Keep container running for hosted deployment
+    command: tail -f /dev/null
+    restart: unless-stopped
+
+    # Expose port if your hosting platform requires it
+    ports:
+      - "8000:8000"

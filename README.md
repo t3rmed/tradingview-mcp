@@ -105,6 +105,73 @@ uv sync
 }
 ```
 
+### Option 3: Docker (Containerized)
+
+Docker provides a consistent environment and easy deployment across different systems.
+
+#### Prerequisites
+- [Docker](https://docs.docker.com/get-docker/) installed on your system
+- [Docker Compose](https://docs.docker.com/compose/install/) (usually included with Docker Desktop)
+
+#### Quick Docker Setup
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/atilaahmettaner/tradingview-mcp.git
+   cd tradingview-mcp
+   ```
+
+2. **Build and run with Docker Compose:**
+   ```bash
+   # Build the image
+   docker-compose build
+
+   # Run the MCP server
+   docker-compose run --rm tradingview-mcp
+   ```
+
+3. **For development with live code reloading:**
+   ```bash
+   # Start development container
+   docker-compose --profile dev up -d tradingview-mcp-dev
+
+   # Execute commands in the container
+   docker-compose exec tradingview-mcp-dev uv run tradingview-mcp stdio
+   ```
+
+#### Manual Docker Commands
+
+```bash
+# Build the image
+docker build -t tradingview-mcp .
+
+# Run the MCP server
+docker run --rm -it tradingview-mcp
+
+# Run with specific command
+docker run --rm -it tradingview-mcp stdio
+```
+
+#### Claude Desktop Configuration with Docker
+
+Add this to your Claude Desktop configuration:
+
+```json
+{
+  "mcpServers": {
+    "tradingview-mcp-docker": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "tradingview-mcp"
+      ]
+    }
+  }
+}
+```
+
+**Note:** Make sure to build the Docker image first with `docker build -t tradingview-mcp .`
+
 ## 🛠️ Available Tools
 
 ### 📈 Market Screening
