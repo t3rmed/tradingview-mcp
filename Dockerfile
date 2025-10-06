@@ -20,12 +20,15 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy dependency file for layer caching
 COPY pyproject.toml ./
 
-# Install dependencies directly from pyproject.toml
-RUN uv pip install -e .
+# Install dependencies first (without the package itself)
+RUN uv pip install "mcp[cli]>=1.12.0" "tradingview-screener>=0.6.4" "tradingview-ta>=3.3.0"
 
 # Copy source code
 COPY src/ ./src/
 COPY package.json* ./
+
+# Now install the package itself
+RUN uv pip install -e .
 
 # Create a non-root user for security
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app /opt/venv
