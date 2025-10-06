@@ -19,8 +19,14 @@ COPY pyproject.toml ./
 COPY uv.lock* ./
 
 # Install dependencies using uv
-# Use --no-dev to skip development dependencies in production
-RUN uv sync --frozen --no-dev || uv sync --no-dev
+# Check if uv.lock exists and use appropriate sync strategy
+RUN if [ -f "uv.lock" ]; then \
+        echo "Found uv.lock, using frozen sync..." && \
+        uv sync --frozen; \
+    else \
+        echo "No uv.lock found, syncing from pyproject.toml..." && \
+        uv sync; \
+    fi
 
 # Copy source code
 COPY src/ ./src/
