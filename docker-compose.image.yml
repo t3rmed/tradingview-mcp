@@ -1,0 +1,17 @@
+# Docker Compose using pre-built image (most reliable for hosting)
+# First build and push: docker build -t your-registry/tradingview-mcp . && docker push your-registry/tradingview-mcp
+version: '3.8'
+
+services:
+  tradingview-mcp:
+    image: t3rmed/tradingview-mcp:latest
+    container_name: tradingview-mcp-server
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: tail -f /dev/null
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+
+    # Alternative: Use GitHub Container Registry
+    # image: ghcr.io/t3rmed/tradingview-mcp:latest

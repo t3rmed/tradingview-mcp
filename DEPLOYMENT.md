@@ -1,83 +1,90 @@
 # Deployment Guide
 
-## Phala Network Deployment
+## Quick Start - Choose Your Method
 
-### Issue: Git not available in build environment
+You have 4 docker-compose files to choose from:
 
-If you encounter this error:
+1. **`docker-compose.yml`** - Git context (modern Docker platforms)
+2. **`docker-compose.local.yml`** - Local file build (upload source files)
+3. **`docker-compose.github.yml`** - Explicit GitHub context
+4. **`docker-compose.image.yml`** - Pre-built image (most reliable)
+
+## Method 1: Git Context (Recommended)
+
+**Use:** `docker-compose.yml`
+
+This should work on modern Docker platforms that support git contexts:
+
+```yaml
+services:
+  tradingview-mcp:
+    build:
+      context: https://github.com/t3rmed/tradingview-mcp.git#main
+      dockerfile: Dockerfile
 ```
-failed to init repo: exec: "git": executable file not found in $PATH
+
+**For Phala Network:** Try this first - just upload `docker-compose.yml`
+
+## Method 2: Pre-built Image (Most Reliable)
+
+**Use:** `docker-compose.image.yml`
+
+This repository has GitHub Actions that automatically builds and pushes Docker images to GitHub Container Registry.
+
+```yaml
+services:
+  tradingview-mcp:
+    image: ghcr.io/t3rmed/tradingview-mcp:latest
 ```
 
-This means the hosting platform doesn't have git available during the Docker build process.
+**For any hosting platform:**
+1. Rename `docker-compose.image.yml` to `docker-compose.yml`
+2. Upload just that one file
+3. The image is automatically built and available
 
-### Solution 1: Upload Source Files Directly
+## Method 3: Local File Upload
 
-1. **Download/clone your repository locally**
-2. **Upload these files to Phala Network:**
-   - `Dockerfile`
-   - `docker-compose.yml` (or `docker-compose.local.yml`)
-   - `pyproject.toml`
-   - `uv.lock`
-   - `package.json`
-   - `src/` directory (entire folder)
+**Use:** `docker-compose.local.yml`
 
-3. **Use the standard docker-compose.yml** which builds from local files:
-   ```yaml
-   version: '3.8'
-   services:
-     tradingview-mcp:
-       build: .
-       # ... rest of config
-   ```
+If git context doesn't work, upload these files:
+- `docker-compose.local.yml` (rename to `docker-compose.yml`)
+- `Dockerfile`
+- `pyproject.toml`
+- `uv.lock`
+- `package.json`
+- `src/` directory
 
-### Solution 2: Pre-built Docker Image (Recommended)
+## Troubleshooting Phala Network
 
-Build and push to Docker Hub, then reference the image:
+### Error: "git": executable file not found
 
-1. **Build locally:**
-   ```bash
-   docker build -t yourusername/tradingview-mcp .
-   docker push yourusername/tradingview-mcp
-   ```
+**Cause:** Build environment doesn't have git installed
 
-2. **Create simple docker-compose.yml:**
-   ```yaml
-   version: '3.8'
-   services:
-     tradingview-mcp:
-       image: yourusername/tradingview-mcp:latest
-       container_name: tradingview-mcp-server
-       environment:
-         - PYTHONUNBUFFERED=1
-       command: tail -f /dev/null
-       restart: unless-stopped
-       ports:
-         - "8000:8000"
-   ```
+**Solutions (in order of preference):**
 
-### Solution 3: GitHub Actions Auto-Build
+1. **Try Method 1 first** - Modern Docker should handle git contexts
+2. **Use Method 2** - Pre-built images (most reliable)
+3. **Use Method 3** - Upload source files directly
 
-Set up GitHub Actions to automatically build and push Docker images:
+### Error: Dependencies not found
 
-1. **Create `.github/workflows/docker.yml`:**
-   ```yaml
-   name: Build Docker Image
-   on:
-     push:
-       branches: [ main ]
-   jobs:
-     build:
-       runs-on: ubuntu-latest
-       steps:
-         - uses: actions/checkout@v3
-         - name: Build and push Docker image
-           uses: docker/build-push-action@v3
-           with:
-             context: .
-             push: true
-             tags: yourusername/tradingview-mcp:latest
-   ```
+**Solution:** Ensure you're using the updated Dockerfile that handles missing `uv.lock`
+
+## GitHub Actions Auto-Build
+
+This repository includes GitHub Actions (`.github/workflows/docker.yml`) that automatically:
+
+- ✅ Builds Docker images on every commit to main
+- ✅ Pushes to GitHub Container Registry (ghcr.io)
+- ✅ Creates multi-architecture images (AMD64 + ARM64)
+- ✅ Tags with version numbers and 'latest'
+
+**Using auto-built images:**
+```yaml
+services:
+  tradingview-mcp:
+    image: ghcr.io/t3rmed/tradingview-mcp:latest
+```
 
 ## Other Hosting Platforms
 

@@ -1,4 +1,4 @@
-# Docker Compose with Git context - should work on modern Docker platforms
+# Alternative: Docker Compose with GitHub context (requires Docker buildx support)
 version: '3.8'
 
 services:
@@ -9,10 +9,7 @@ services:
     container_name: tradingview-mcp-server
     environment:
       - PYTHONUNBUFFERED=1
-    # Keep container running for hosted deployment
     command: tail -f /dev/null
     restart: unless-stopped
-
-    # Expose port if your hosting platform requires it
     ports:
       - "8000:8000"
