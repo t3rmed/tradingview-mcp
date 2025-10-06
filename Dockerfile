@@ -13,40 +13,29 @@ RUN apt-get update && apt-get install -y \
 # Install uv for fast Python package management
 RUN pip install uv
 
-# Copy dependency files first for better layer caching
-COPY pyproject.toml ./
-# Copy uv.lock if it exists (some deployments might not have it)
-COPY uv.lock* ./
+# Create virtual environment
+RUN uv venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-# Install dependencies using uv
-# Check if uv.lock exists and use appropriate sync strategy
-RUN if [ -f "uv.lock" ]; then \
-        echo "Found uv.lock, using frozen sync..." && \
-        uv sync --frozen; \
-    else \
-        echo "No uv.lock found, syncing from pyproject.toml..." && \
-        uv sync; \
-    fi
+# Copy dependency file for layer caching
+COPY pyproject.toml ./
+
+# Install dependencies directly from pyproject.toml
+RUN uv pip install -e .
 
 # Copy source code
 COPY src/ ./src/
 COPY package.json* ./
 
-# Build the package
-RUN uv run python -m build
-
-# Install the built package
-RUN uv pip install dist/*.whl
-
 # Create a non-root user for security
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app /opt/venv
 USER appuser
 
 # Expose port if needed (MCP servers typically use stdio)
 # EXPOSE 8000
 
-# Set the entry point
-ENTRYPOINT ["uv", "run", "tradingview-mcp"]
+# Set the entry point to use the installed package
+ENTRYPOINT ["/opt/venv/bin/tradingview-mcp"]
 
 # Default command (can be overridden)
 CMD ["stdio"]
